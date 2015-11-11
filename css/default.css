@@ -1,0 +1,17 @@
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-color: #D4D0C8;
+	font-family:MS Sans Serif;
+	font-size:8px;
+}
+.linha{
+	border:1px inset;
+	margin:1px; padding:3px;
+}
+input, select{
+	font-size:8px;
+	font-family:MS Sans Serif;
+}

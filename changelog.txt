@@ -1,0 +1,2 @@
+/*v1.0.2*/
+	- Alterado o componente de layout para ClsAnchorControls de desenvolvimento interno.

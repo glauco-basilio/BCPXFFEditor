@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="js/jquery-1.2.6.js" type="text/javascript" language="javascript"></script>
+<link href="css/default.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript">
+var rowDic;
+var lastErrorMessage;
+function Add(){
+	$(document.body).append($('#template').html());
+}
+function AddWith(SOURCE, NAME, type, LENGTH, PRECISION, SCALE, NULLABLE){
+    $(document.body).append( $('#template').html());
+	var elm = $('.linha:last', document.body);
+	$("input[name='SOURCE']",elm).attr('value',SOURCE);
+	$("input[name='NAME']",elm).attr('value',NAME);
+	if(type) $("select[name='type']",elm).attr('value',type);
+	if(LENGTH) $("input[name='LENGTH']",elm).attr('value',LENGTH);
+	if(PRECISION) $("input[name='PRECISION']",elm).attr('value',PRECISION);
+	if(SCALE) $("input[name='SCALE']",elm).attr('value',SCALE);
+	if(NULLABLE) $("select[name='NULLABLE']",elm).attr('value',NULLABLE);
+
+}
+function remove(elm){
+	$(elm.parentNode).remove();
+}
+$(document).ready(
+	function(){
+		$('#template').hide();
+	}
+);
+
+function Reset(){
+	$(document.body).children('.linha').remove();
+}
+
+function getColumns(){
+	try{
+		var dictionary = new ActiveXObject( "Scripting.Dictionary" );
+		$(document.body).children('.linha').each(
+			function(){
+				var id = $("input[name='SOURCE']",this).val();
+				var arr = new ActiveXObject( "Scripting.Dictionary" );
+				arr.add( "type",$("select[name='type']",this).val());
+				arr.add("NAME",$("input[name='NAME']",this).val());
+				arr.add("LENGTH",$("input[name='LENGTH']",this).val());
+				arr.add("PRECISION",$("input[name='PRECISION']",this).val());
+				arr.add("SCALE",$("input[name='SCALE']",this).val());
+				arr.add("NULLABLE",$("select[name='NULLABLE']",this).val());
+				if( dictionary.Exists(id) ){
+					lastErrorMessage = 'SOURCE duplicado';
+				}
+				dictionary(id) =  arr;
+			}
+		);
+		rowDic = null;
+		rowDic =  dictionary;
+	}
+	catch(e){
+		lastErrorMessage = e.message;
+		recordDic =  null;
+	}
+}
+</script>
+</head>
+
+<body>
+    <div id="template" >
+		<div class="linha" >
+            SOURCE :
+            <input type="text" name="SOURCE"  style="width:30px" />
+            xsi:Type
+            <select name="type">
+                <option value="...">Escolha um tipo...</option>
+                <option value="SQLBIT">SQLBIT</option>
+                <option value="SQLTINYINT">SQLTINYINT</option>
+                <option value="SQLSMALLINT">SQLSMALLINT</option>
+                <option value="SQLINT">SQLINT</option>    
+                <option value="SQLBIGINT">SQLBIGINT</option>
+                <option value="SQLFLT4">SQLFLT4</option>
+                <option value="SQLFLT8">SQLFLT8</option>    
+                <option value="SQLDATETIME">SQLDATETIME</option> 
+                <option value="SQLDATETIM4">SQLDATETIM4</option> 
+                <option value="SQLDATETIM8">SQLDATETIM8</option> 
+                <option value="SQLMONEY">SQLMONEY</option> 
+                <option value="SQLMONEY4">SQLMONEY4</option> 
+                <option value="SQLVARIANT">SQLVARIANT</option> 
+                <option value="SQLUNIQUEID">SQLUNIQUEID</option> 
+                <option value="SQLDECIMAL">SQLDECIMAL</option> 
+                <option value="SQLNUMERIC">SQLNUMERIC</option> 
+                <option value="SQLIMAGE">SQLIMAGE</option> 
+                <option value="CharLOB">CharLOB</option> 
+                <option value="SQLTEXT">SQLTEXT</option> 
+                <option value="SQLUDT">SQLUDT</option> 
+                <option value="SQLNTEXT">SQLNTEXT</option> 
+                <option value="SQLBINARY">SQLBINARY</option> 
+                <option value="SQLVARYBIN">SQLVARYBIN</option> 
+                <option value="SQLCHAR">SQLCHAR</option> 
+                <option value="SQLVARYCHAR">SQLVARYCHAR</option> 
+                <option value="SQLNCHAR">SQLNCHAR</option> 
+                <option value="SQLNVARCHAR">SQLNVARCHAR</option> 
+            </select>
+            <span class="clsNAME" >
+                NAME :<input name="NAME" type="text" style="width:30px" />
+            </span>
+            <span class="clsLENGTH" >
+                LENGTH  :<input name="LENGTH" style="width:30px" type="text" />
+            </span>
+            <span class="clsPRECISION" >
+                Terminator :<input name="PRECISION" style="width:30px" type="text" />
+            </span>
+            <span class="clsSCALE" >
+                SCALE :<input name="SCALE" style="width:30px" type="text" />
+            </span>
+            <span class="clsNULLABLE" >
+                NULLABLE :
+                <select name="NULLABLE" style="width:55px">
+                	<option value="...">...Escolha...</option>
+                	<option value="YES">YES</option>
+                	<option value="NO">NO</option>
+                </select>
+            </span>
+            <input type="button" value="-" onclick="remove(this)"/>
+		</div>
+    </div>
+</body>
+</html>

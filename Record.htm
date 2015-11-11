@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="js/jquery-1.2.6.js" type="text/javascript" language="javascript"></script>
+<link href="css/default.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript">
+var recordDic;
+var lastErrorMessage;
+function Add(){
+	$(document.body).append($('#template').html());
+}
+function Validate(){
+	var arr = [];
+	$(document.body).children('.linha').each(
+		function (){
+			
+			var ID = $("input[name='ID']",this).val();
+			if(ID.replace(/^ */g,"").replace(/ *$/g,"") == "" ){
+				arr.push(false);
+				return;
+			}
+			
+			var selectedValue = $(this).children("select[name='type']").val();
+			if(selectedValue == "..."){
+				arr.push(false);
+				return;
+			}
+			arr.push(true);		
+		}
+	);
+	var retorno = true;
+	for(var i = 0 ;i<arr.length;i++){
+		retorno = retorno && arr[i];
+	}
+	return retorno;
+}
+function AddWith(ID, type, length, prefix_length, terminator, max_mength, collation){
+    $(document.body).append( $('#template').html());
+	var elm = $('.linha:last', document.body);
+	$("input[name='ID']",elm).attr('value',ID);
+	try{
+		typeChanged( $("select[name='type']",elm).attr('value',type).get(0) );
+	}catch(e){
+	}
+	if(length) $("input[name='LENGTH']",elm).attr('value',length);
+	if(prefix_length) $("select[name='PREFIX_LENGTH']",elm).attr('value',prefix_length);
+	if(terminator) $("input[name='TERMINATOR']",elm).attr('value',terminator);
+	if(max_mength) $("input[name='MAX_LENGTH']",elm).attr('value',max_mength);
+	if(collation) $('.clsCOLLATION',elm).children("select[name='COLLATION']").attr('value',collation);
+}
+function remove(elm){
+	$(elm.parentNode).remove();
+}
+$(document).ready(
+	function(){
+		$('#template').hide();
+	}
+);
+function typeChanged(elm){
+	var context = elm.parentNode;
+	var selectedValue = elm.value;
+	$('span',context).hide();
+	if(selectedValue.indexOf('Fixed') > -1){
+		$('.clsLENGTH',context).show();
+	}
+	if(selectedValue.indexOf('Char') > -1){
+		$('.clsCOLLATION',context).show();
+		$('.clsMAX_LENGTH',context).show();
+	}
+	if(selectedValue.indexOf('Prefix') > -1){
+		$('.clsPREFIX_LENGTH',context).show();
+		$('.clsMAX_LENGTH',context).show();
+	}
+	if(selectedValue.indexOf('Term') > -1){
+		$('.clsTERMINATOR',context).show();
+	}
+}
+function Reset(){
+	$(document.body).children('.linha').remove();
+}
+function getFields(){
+	try{
+		var dictionary = new ActiveXObject( "Scripting.Dictionary" );
+		$(document.body).children('.linha').each(
+			function(){
+				var ID = $("input[name='ID']",this).val();
+				var arr = new ActiveXObject( "Scripting.Dictionary" );
+				arr.add( "type",$(this).children("select[name='type']").val());
+				arr.add("LENGTH",$("input[name='LENGTH']",this).val());
+				arr.add("PREFIX_LENGTH",$("select[name='PREFIX_LENGTH']",this).val());
+				arr.add("TERMINATOR",$("input[name='TERMINATOR']",this).val());
+				arr.add("MAX_LENGTH",$("input[name='MAX_LENGTH']",this).val());
+				arr.add("COLLATION",$("select[name='COLLATION']",this).val());
+				if( dictionary.Exists(ID) ){
+					lastErrorMessage = 'ID duplicado';
+				}else{
+					dictionary.add(ID,arr);
+				}
+			}
+		);
+		recordDic = null;
+		recordDic =  dictionary;
+	}
+	catch(e){
+		lastErrorMessage = e.message;
+		recordDic =  null;
+	}
+}
+</script>
+</head>
+
+<body>
+    <div id="template" >
+		<div class="linha" >
+            ID:
+            <input type="text" name="ID"  style="width:30px" />
+            xsi:Type
+            <select name="type" onchange="typeChanged(this)">
+                <option value="...">Escolha um tipo...</option>
+                <option value="NativeFixed">NativeFixed</option>
+                <option value="NativePrefix">NativePrefix</option>
+                <option value="CharFixed">CharFixed</option>
+                <option value="NCharFixed">NCharFixed</option>    
+                <option value="CharPrefix">CharPrefix</option>
+                <option value="NCharPrefix">NCharPrefix</option>
+                <option value="CharTerm">CharTerm</option>    
+                <option value="NCharTerm">NCharTerm</option>    
+            </select>
+            <span class="clsLENGTH" style="display:none">
+                Length :<input name="LENGTH" type="text" style="width:30px" />
+            </span>
+            <span class="clsPREFIX_LENGTH" style="display:none">
+                Prefix_Length :<!--input name="PREFIX_LENGTH" style="width:30px" type="text" /-->
+                <select name="PREFIX_LENGTH" style="width:30px">
+                	<option value="...">Escolha</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+					<option value="4">4</option>
+                    <option value="8">8</option>
+                </select>
+            </span>
+            <span class="clsTERMINATOR" style="display:none">
+                Terminator :<input name="TERMINATOR" style="width:30px" type="text" />
+            </span>
+            <span class="clsMAX_LENGTH" style="display:none">
+                Max_Length :<input name="MAX_LENGTH" style="width:30px" type="text" />
+            </span>
+            <span class="clsCOLLATION" style="display:none">
+                Collation :
+                <select name="COLLATION" style="width:200px">
+                	<option value="...">...Escolha...</option>
+                    <option value="sql_latin1_general_cp437_bin" >sql_latin1_general_cp437_bin</option>
+                    <option value="sql_latin1_general_cp437_cs_as" >sql_latin1_general_cp437_cs_as</option>
+                    <option value="sql_latin1_general_cp437_ci_as" >sql_latin1_general_cp437_ci_as</option>
+                    <option value="sql_latin1_general_pref_cp437_ci_as" >sql_latin1_general_pref_cp437_ci_as</option>
+                    <option value="sql_latin1_general_cp437_ci_ai" >sql_latin1_general_cp437_ci_ai</option>
+                    <option value="sql_latin1_general_cp850_bin" >sql_latin1_general_cp850_bin</option>
+                    <option value="sql_latin1_general_cp850_cs_as" >sql_latin1_general_cp850_cs_as</option>
+                    <option value="sql_latin1_general_cp850_ci_as" >sql_latin1_general_cp850_ci_as</option>
+                    <option value="sql_latin1_general_pref_cp850_ci_as" >sql_latin1_general_pref_cp850_ci_as</option>
+                    <option value="sql_latin1_general_cp850_ci_ai" >sql_latin1_general_cp850_ci_ai</option>
+                    <option value="sql_1xcompat_cp850_ci_as" >sql_1xcompat_cp850_ci_as</option>
+                    <option value="latin1_general_bin" >latin1_general_bin</option>
+                    <option value="sql_latin1_general_cp1_cs_as" >sql_latin1_general_cp1_cs_as</option>
+                    <option value="sql_latin1_general_cp1_ci_as" >sql_latin1_general_cp1_ci_as</option>
+                    <option value="sql_latin1_general_pref_cp1_ci_as" >sql_latin1_general_pref_cp1_ci_as</option>
+                    <option value="sql_latin1_general_cp1_ci_ai" >sql_latin1_general_cp1_ci_ai</option>
+                    <option value="sql_altdiction_cp850_cs_as" >sql_altdiction_cp850_cs_as</option>
+                    <option value="sql_altdiction_pref_cp850_ci_as" >sql_altdiction_pref_cp850_ci_as</option>
+                    <option value="sql_altdiction_cp850_ci_ai" >sql_altdiction_cp850_ci_ai</option>
+                    <option value="sql_scandinavian_pref_cp850_ci_as" >sql_scandinavian_pref_cp850_ci_as</option>
+                    <option value="sql_scandinavian_cp850_cs_as" >sql_scandinavian_cp850_cs_as</option>
+                    <option value="sql_scandinavian_cp850_ci_as" >sql_scandinavian_cp850_ci_as</option>
+                    <option value="sql_altdiction_cp850_ci_as" >sql_altdiction_cp850_ci_as</option>
+                    <option value="latin1_general_cs_as" >latin1_general_cs_as</option>
+                    <option value="latin1_general_ci_as" >latin1_general_ci_as</option>
+                    <option value="hungarian_bin" >hungarian_bin</option>
+                    <option value="sql_latin1_general_cp1250_cs_as" >sql_latin1_general_cp1250_cs_as</option>
+                    <option value="sql_latin1_general_cp1250_ci_as" >sql_latin1_general_cp1250_ci_as</option>
+                    <option value="sql_czech_cp1250_cs_as" >sql_czech_cp1250_cs_as</option>
+                    <option value="sql_czech_cp1250_ci_as" >sql_czech_cp1250_ci_as</option>
+                    <option value="sql_hungarian_cp1250_cs_as" >sql_hungarian_cp1250_cs_as</option>
+                    <option value="sql_hungarian_cp1250_ci_as" >sql_hungarian_cp1250_ci_as</option>
+                    <option value="sql_polish_cp1250_cs_as" >sql_polish_cp1250_cs_as</option>
+                    <option value="sql_polish_cp1250_ci_as" >sql_polish_cp1250_ci_as</option>
+                    <option value="sql_romanian_cp1250_cs_as" >sql_romanian_cp1250_cs_as</option>
+                    <option value="sql_romanian_cp1250_ci_as" >sql_romanian_cp1250_ci_as</option>
+                    <option value="sql_croatian_cp1250_cs_as" >sql_croatian_cp1250_cs_as</option>
+                    <option value="sql_croatian_cp1250_ci_as" >sql_croatian_cp1250_ci_as</option>
+                    <option value="sql_slovak_cp1250_cs_as" >sql_slovak_cp1250_cs_as</option>
+                    <option value="sql_slovak_cp1250_ci_as" >sql_slovak_cp1250_ci_as</option>
+                    <option value="sql_slovenian_cp1250_cs_as" >sql_slovenian_cp1250_cs_as</option>
+                    <option value="sql_slovenian_cp1250_ci_as" >sql_slovenian_cp1250_ci_as</option>
+                    <option value="cyrillic_general_bin" >cyrillic_general_bin</option>
+                    <option value="sql_latin1_general_cp1251_cs_as" >sql_latin1_general_cp1251_cs_as</option>
+                    <option value="sql_latin1_general_cp1251_ci_as" >sql_latin1_general_cp1251_ci_as</option>
+                    <option value="sql_ukrainian_cp1251_cs_as" >sql_ukrainian_cp1251_cs_as</option>
+                    <option value="sql_ukrainian_cp1251_ci_as" >sql_ukrainian_cp1251_ci_as</option>
+                    <option value="sql_latin1_general_cp1253_cs_as" >sql_latin1_general_cp1253_cs_as</option>
+                    <option value="sql_latin1_general_cp1253_ci_as" >sql_latin1_general_cp1253_ci_as</option>
+                    <option value="sql_mixdiction_cp1253_cs_as" >sql_mixdiction_cp1253_cs_as</option>
+                    <option value="sql_altdiction_cp1253_cs_as" >sql_altdiction_cp1253_cs_as</option>
+                    <option value="sql_latin1_general_cp1253_ci_ai" >sql_latin1_general_cp1253_ci_ai</option>
+                    <option value="sql_latin1_general_cp1254_cs_as" >sql_latin1_general_cp1254_cs_as</option>
+                    <option value="sql_latin1_general_cp1254_ci_as" >sql_latin1_general_cp1254_ci_as</option>
+                    <option value="sql_latin1_general_cp1255_cs_as" >sql_latin1_general_cp1255_cs_as</option>
+                    <option value="sql_latin1_general_cp1255_ci_as" >sql_latin1_general_cp1255_ci_as</option>
+                    <option value="sql_latin1_general_cp1256_cs_as" >sql_latin1_general_cp1256_cs_as</option>
+                    <option value="sql_latin1_general_cp1256_ci_as" >sql_latin1_general_cp1256_ci_as</option>
+                    <option value="sql_latin1_general_cp1257_cs_as" >sql_latin1_general_cp1257_cs_as</option>
+                    <option value="sql_latin1_general_cp1257_ci_as" >sql_latin1_general_cp1257_ci_as</option>
+                    <option value="sql_estonian_cp1257_cs_as" >sql_estonian_cp1257_cs_as</option>
+                    <option value="sql_estonian_cp1257_ci_as" >sql_estonian_cp1257_ci_as</option>
+                    <option value="sql_latvian_cp1257_cs_as" >sql_latvian_cp1257_cs_as</option>
+                    <option value="sql_latvian_cp1257_ci_as" >sql_latvian_cp1257_ci_as</option>
+                    <option value="sql_lithuanian_cp1257_cs_as" >sql_lithuanian_cp1257_cs_as</option>
+                    <option value="sql_lithuanian_cp1257_ci_as" >sql_lithuanian_cp1257_ci_as</option>
+                    <option value="sql_danish_pref_cp1_ci_as" >sql_danish_pref_cp1_ci_as</option>
+                    <option value="sql_swedishphone_pref_cp1_ci_as" >sql_swedishphone_pref_cp1_ci_as</option>
+                    <option value="sql_swedishstd_pref_cp1_ci_as" >sql_swedishstd_pref_cp1_ci_as</option>
+                    <option value="sql_icelandic_pref_cp1_ci_as" >sql_icelandic_pref_cp1_ci_as</option>
+                    <option value="sql_ebcdic037_cp1_cs_as" >sql_ebcdic037_cp1_cs_as</option>
+                    <option value="sql_ebcdic273_cp1_cs_as" >sql_ebcdic273_cp1_cs_as</option>
+                    <option value="sql_ebcdic277_cp1_cs_as" >sql_ebcdic277_cp1_cs_as</option>
+                    <option value="sql_ebcdic278_cp1_cs_as" >sql_ebcdic278_cp1_cs_as</option>
+                    <option value="sql_ebcdic280_cp1_cs_as" >sql_ebcdic280_cp1_cs_as</option>
+                    <option value="sql_ebcdic284_cp1_cs_as" >sql_ebcdic284_cp1_cs_as</option>
+                    <option value="sql_ebcdic285_cp1_cs_as" >sql_ebcdic285_cp1_cs_as</option>
+                    <option value="sql_ebcdic297_cp1_cs_as" >sql_ebcdic297_cp1_cs_as</option>
+                </select>
+            </span>
+            <input type="button" value="-" onclick="remove(this)"/>
+		</div>
+    </div>
+</body>
+</html>
